@@ -1,3 +1,12 @@
+// Format date to Brazilian format (DD/MM/YYYY)
+function formatDateToBR(dateStr) {
+  if (!dateStr) return "";
+  const [month, day, year] = dateStr.trim().split("/").map(Number);
+  const fullYear = year < 100 ? 2000 + year : year;
+  const dayStr = String(day).padStart(2, "0");
+  const monthStr = String(month).padStart(2, "0");
+  return `${dayStr}/${monthStr}/${fullYear}`;
+}
 function calculateTimeInRoom(entryTime, exitTime) {
   if (!entryTime || !exitTime) return "";
   const entryMinutes = timeStringToMinutes(entryTime);
@@ -90,7 +99,7 @@ document.getElementById("csvForm").addEventListener("submit", function (e) {
       if (!entry.date || !entry.time || !exit.time) continue;
       participants.push({
         name: cleanName,
-        date: entry.date,
+        date: formatDateToBR(entry.date),
         dayOfWeek: getDayOfWeek(cols[1]),
         entry: entry.time,
         exit: exit.time,
