@@ -18,7 +18,7 @@ O arquivo CSV de entrada deve ser gerado pelo relatório do aplicativo de chamad
 1. Abra o arquivo `index.html` no seu navegador.
 2. Selecione o arquivo CSV exportado do Teams.
 3. Clique em **Organizar e Baixar CSV**.
-4. O CSV limpo e organizado será baixado automaticamente.
+4. O CSV limpo e organizado será baixado automaticamente, com o nome no formato `dia-da-semana-DD-MM.csv` (exemplo: `segunda-26-08.csv`).
 
 ## Estrutura dos Arquivos
 

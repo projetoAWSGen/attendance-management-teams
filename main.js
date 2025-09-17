@@ -118,7 +118,20 @@ document.getElementById("csvForm").addEventListener("submit", function (e) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "relatorio_organizado.csv";
+    // Use the weekday from the first participant, fallback to 'saida'
+    let weekday = participants.length > 0 ? participants[0].dayOfWeek : "saida";
+    let dateDM = "data";
+    if (participants.length > 0 && participants[0].date) {
+      // participants[0].date is in DD/MM/YYYY
+      const [dd, mm] = participants[0].date.split("/");
+      dateDM = `${dd}-${mm}`;
+    }
+    // Remove accents and spaces for filename safety
+    let weekdayFile = weekday
+      .normalize("NFD")
+      .replace(/[^\w]/g, "")
+      .toLowerCase();
+    a.download = `${weekdayFile}-${dateDM}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
