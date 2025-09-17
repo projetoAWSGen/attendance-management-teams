@@ -1,32 +1,22 @@
-// Calcula a diferença entre duas horas e retorna no formato 'X h Y min'
-function calcularTempoEmSala(horaEntrada, horaSaida) {
-  if (!horaEntrada || !horaSaida) return "";
-  function toMinutes(hora) {
-    if (!hora) return null;
-    const [hms, periodo] = hora.trim().split(" ");
-    if (!hms || !periodo) return null;
-    let [h, m, s] = hms.split(":").map(Number);
-    if (isNaN(h) || isNaN(m)) return null;
-    if (periodo.toUpperCase() === "PM" && h !== 12) h += 12;
-    if (periodo.toUpperCase() === "AM" && h === 12) h = 0;
-    return h * 60 + m;
-  }
-  const minEntrada = toMinutes(horaEntrada);
-  const minSaida = toMinutes(horaSaida);
-  if (minEntrada === null || minSaida === null) return "";
-  let diff = minSaida - minEntrada;
-  if (diff < 0) diff += 24 * 60; // caso passe da meia-noite
-  const horas = Math.floor(diff / 60);
-  const minutos = diff % 60;
-  return `${horas} h ${minutos} min`;
+function calculateTimeInRoom(entryTime, exitTime) {
+  if (!entryTime || !exitTime) return "";
+  const entryMinutes = timeStringToMinutes(entryTime);
+  const exitMinutes = timeStringToMinutes(exitTime);
+  if (entryMinutes === null || exitMinutes === null) return "";
+  let diff = exitMinutes - entryMinutes;
+  if (diff < 0) diff += 24 * 60;
+  const hours = Math.floor(diff / 60);
+  const minutes = diff % 60;
+  return `${hours} h ${minutes} min`;
 }
-function getDiaSemana(dataHora) {
-  if (!dataHora) return "";
-  const [data] = dataHora.split(",");
-  if (!data) return "";
-  const [mes, dia, ano] = data.trim().split("/").map(Number);
-  const anoCorrigido = ano < 100 ? 2000 + ano : ano;
-  const date = new Date(anoCorrigido, mes - 1, dia);
+
+function getDayOfWeek(dateTimeStr) {
+  if (!dateTimeStr) return "";
+  const [date] = dateTimeStr.split(",");
+  if (!date) return "";
+  const [month, day, year] = date.trim().split("/").map(Number);
+  const correctedYear = year < 100 ? 2000 + year : year;
+  const jsDate = new Date(correctedYear, month - 1, day);
   const dias = [
     "Domingo",
     "Segunda-feira",
@@ -36,15 +26,25 @@ function getDiaSemana(dataHora) {
     "Sexta-feira",
     "Sábado",
   ];
-  // Retorna só a primeira palavra do dia
-  return dias[date.getDay()].split("-")[0];
+  return dias[jsDate.getDay()].split("-")[0].trim();
 }
 
-function getDataHoraSeparada(dataHora) {
-  if (!dataHora) return { data: "", hora: "" };
-  const partes = dataHora.split(",");
-  if (partes.length < 2) return { data: dataHora.trim(), hora: "" };
-  return { data: partes[0].trim(), hora: partes[1].trim() };
+function splitDateTime(dateTimeStr) {
+  if (!dateTimeStr) return { date: "", time: "" };
+  const parts = dateTimeStr.split(",");
+  if (parts.length < 2) return { date: dateTimeStr.trim(), time: "" };
+  return { date: parts[0].trim(), time: parts[1].trim() };
+}
+
+function timeStringToMinutes(timeStr) {
+  if (!timeStr) return null;
+  const [hms, period] = timeStr.trim().split(" ");
+  if (!hms || !period) return null;
+  let [h, m, s] = hms.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) return null;
+  if (period.toUpperCase() === "PM" && h !== 12) h += 12;
+  if (period.toUpperCase() === "AM" && h === 12) h = 0;
+  return h * 60 + m;
 }
 
 document.getElementById("csvForm").addEventListener("submit", function (e) {
@@ -56,17 +56,15 @@ document.getElementById("csvForm").addEventListener("submit", function (e) {
   reader.onload = function (evt) {
     const text = evt.target.result;
     const lines = text.split(/\r?\n/);
-    // Procura a seção de participantes
-    let secaoIdx = lines.findIndex((l) =>
+    const sectionIdx = lines.findIndex((l) =>
       l.trim().toLowerCase().includes("2. participantes")
     );
-    if (secaoIdx === -1) {
+    if (sectionIdx === -1) {
       document.getElementById("msg").textContent =
-        "Seção de participantes não encontrada.";
+        "Participants section not found.";
       return;
     }
-    // O cabeçalho deve estar logo após a seção
-    let startIdx = secaoIdx + 1;
+    let startIdx = sectionIdx + 1;
     while (startIdx < lines.length && lines[startIdx].trim() === "") startIdx++;
     if (
       startIdx >= lines.length ||
@@ -75,39 +73,36 @@ document.getElementById("csvForm").addEventListener("submit", function (e) {
       !lines[startIdx].includes("Última Saída")
     ) {
       document.getElementById("msg").textContent =
-        "Cabeçalho da tabela de participantes não encontrado.";
+        "Participants table header not found.";
       return;
     }
-    // Coleta os dados até o fim ou próxima seção
-    let participantes = [];
+    const participants = [];
     for (let i = startIdx + 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line || /^\d+\./.test(line)) break;
       const cols = line.split("\t");
       if (cols.length < 5) continue;
-      // Exclui emails com @external.generation.org
       if (cols[4] && cols[4].includes("@external.generation.org")) continue;
-      // Limpa o nome, removendo o que está entre parênteses
-      const nomeLimpo = cols[0].replace(/\s*\(.*\)\s*$/, "").trim();
-      // Separa data e hora da entrada
-      const entrada = getDataHoraSeparada(cols[1]);
-      // Separa data e hora da saída
-      const saida = getDataHoraSeparada(cols[2]);
-      participantes.push({
-        Nome: nomeLimpo,
-        Data: entrada.data,
-        "Dia da Semana": getDiaSemana(cols[1]),
-        Entrada: entrada.hora,
-        Saida: saida.hora,
-        "Tempo em sala": calcularTempoEmSala(entrada.hora, saida.hora),
+      const cleanName = cols[0].replace(/\s*\(.*\)\s*$/, "").trim();
+      const entry = splitDateTime(cols[1]);
+      const exit = splitDateTime(cols[2]);
+      // Only add if entry and exit are present
+      if (!entry.date || !entry.time || !exit.time) continue;
+      participants.push({
+        name: cleanName,
+        date: entry.date,
+        dayOfWeek: getDayOfWeek(cols[1]),
+        entry: entry.time,
+        exit: exit.time,
+        timeInRoom: calculateTimeInRoom(entry.time, exit.time),
       });
     }
-    participantes.sort((a, b) => a.Nome.localeCompare(b.Nome, "pt-BR"));
-    const header = "Nome,Data,Dia da Semana,Entrada,Saída,Tempo em sala\n";
-    const csv = participantes
+    participants.sort((a, b) => a.name.localeCompare(b.name, "en-US"));
+    const header = "Nome,Data,Dia da Semana,Entrada,Saída,Tempo em Sala\n";
+    const csv = participants
       .map(
         (p) =>
-          `"${p.Nome}","${p.Data}","${p["Dia da Semana"]}","${p.Entrada}","${p.Saida}","${p["Tempo em sala"]}"`
+          `"${p.name}","${p.date}","${p.dayOfWeek}","${p.entry}","${p.exit}","${p.timeInRoom}"`
       )
       .join("\n");
     const blob = new Blob([header + csv], { type: "text/csv" });
