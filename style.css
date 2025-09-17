@@ -1,0 +1,56 @@
+.instructions {
+  text-align: left;
+  margin-bottom: 18px;
+  color: #333;
+  font-size: 1rem;
+}
+.instructions ol {
+  margin: 8px 0 0 20px;
+  padding: 0;
+}
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6fa;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+.container {
+  background: #fff;
+  margin-top: 60px;
+  padding: 32px 24px 24px 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px #0001;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+h1 {
+  color: #2a3a5a;
+  margin-bottom: 16px;
+}
+input[type="file"] {
+  margin: 16px 0;
+}
+button {
+  background: #2a3a5a;
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: background 0.2s;
+}
+button:hover {
+  background: #1a253a;
+}
+footer {
+  margin-top: 40px;
+  color: #888;
+  font-size: 0.9em;
+}

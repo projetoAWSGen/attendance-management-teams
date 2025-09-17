@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Organizador de Presença CSV</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script src="main.js" defer></script>
+  </head>
+  <body>
+    <main class="container" aria-label="Organizador de Presença">
+      <h1>Organizador de Presença</h1>
+      <section class="instructions" aria-label="Instruções de uso">
+        <h2 class="sr-only">Instruções de uso</h2>
+        <ol>
+          <li>Selecione o arquivo CSV exportado da sua lista de presença.</li>
+          <li>Clique em <strong>Organizar e Baixar CSV</strong>.</li>
+          <li>
+            O arquivo organizado será baixado automaticamente, pronto para uso.
+          </li>
+          <li>
+            Participantes com email <code>@external.generation.org</code> serão
+            removidos.
+          </li>
+        </ol>
+      </section>
+      <form id="csvForm" aria-label="Formulário de upload de CSV">
+        <label for="csvInput">Arquivo CSV:</label>
+        <input
+          type="file"
+          id="csvInput"
+          accept=".csv"
+          required
+          aria-required="true"
+        />
+        <button type="submit">Organizar e Baixar CSV</button>
+      </form>
+      <div id="msg" role="status" aria-live="polite"></div>
+    </main>
+    <footer>&copy; 2025 Organizador de Presença</footer>
+  </body>
+</html>
