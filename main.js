@@ -126,12 +126,22 @@ document.getElementById("csvForm").addEventListener("submit", function (e) {
       const [dd, mm] = participants[0].date.split("/");
       dateDM = `${dd}-${mm}`;
     }
+    // Determine period (manha/tarde) based on entry time
+    let period = "periodo";
+    if (participants.length > 0 && participants[0].entry) {
+      const entry = participants[0].entry;
+      const [hms, ampm] = entry.split(" ");
+      let [h, m] = hms.split(":").map(Number);
+      if (ampm && ampm.toUpperCase() === "PM" && h !== 12) h += 12;
+      if (ampm && ampm.toUpperCase() === "AM" && h === 12) h = 0;
+      period = h < 12 ? "manha" : "tarde";
+    }
     // Remove accents and spaces for filename safety
     let weekdayFile = weekday
       .normalize("NFD")
       .replace(/[^\w]/g, "")
       .toLowerCase();
-    a.download = `${weekdayFile}-${dateDM}.csv`;
+    a.download = `${weekdayFile}-${dateDM}-${period}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
