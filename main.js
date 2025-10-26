@@ -155,7 +155,16 @@ document.getElementById("csvForm").addEventListener("submit", function (e) {
             .normalize("NFD")
             .replace(/[^\w]/g, "")
             .toLowerCase();
-        const filename = `${weekdayFile}-${dateDM}-${period}.csv`;
+        // Extract week number from the original uploaded filename if present, expecting patterns like "semana-10" or "semana10"
+        let weekPrefix = "";
+        if (file && file.name) {
+          const lowerName = file.name.toLowerCase();
+          const match = lowerName.match(/semana[-_\s]?(\d{1,2})/i);
+          if (match && match[1]) {
+            weekPrefix = `semana-${match[1]}-`;
+          }
+        }
+        const filename = `${weekPrefix}${weekdayFile}-${dateDM}-${period}.csv`;
 
         filesToDownload.push({ blob, filename });
       } catch (error) {
